@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 import csv
 import tempfile
+from unittest import mock
 
 import testtools
 
@@ -63,3 +64,28 @@ class CustomFormatterTests(testtools.TestCase):
             )
             self.assertEqual(self.issue.severity, data["severity"])
             self.assertEqual(self.issue.text, data["message"])
+
+    def test_report_test_name(self):
+        self.issue.test_id = "B104"
+        templates = (
+            (
+                "{test_id}:{test_name}",
+                "B104:hardcoded_bind_all_interfaces\n",
+            ),
+            ("{test_name:>40}", f"{self.check_name:>40}\n"),
+        )
+        for template, expected in templates:
+            with self.subTest(template=template):
+                with mock.patch.object(custom.LOG, "warning") as warning:
+                    with open(self.tmp_fname, "w") as tmp_file:
+                        custom.report(
+                            self.manager,
+                            tmp_file,
+                            self.issue.severity,
+                            self.issue.confidence,
+                            template=template,
+                        )
+                    warning.assert_not_called()
+
+                with open(self.tmp_fname) as tmp_file:
+                    self.assertEqual(expected, tmp_file.read())

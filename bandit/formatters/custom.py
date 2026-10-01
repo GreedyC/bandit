@@ -11,6 +11,14 @@ This formatter outputs the issues in custom machine-readable format.
 
 default template: ``{abspath}:{line}: {test_id}[bandit]: {severity}: {msg}``
 
+The ``{test_name}`` tag expands to the check name, for example
+``hardcoded_bind_all_interfaces``. It can be combined with ``{test_id}`` in a
+custom template:
+
+.. code-block:: console
+
+    bandit -r examples/ --format custom --msg-template "{test_id}:{test_name}"
+
 :Example:
 
 .. code-block:: none
@@ -77,6 +85,7 @@ def report(manager, fileobj, sev_level, conf_level, template=None):
         "col": lambda issue: issue.col_offset,
         "end_col": lambda issue: issue.end_col_offset,
         "test_id": lambda issue: issue.test_id,
+        "test_name": lambda issue: issue.test,
         "severity": lambda issue: issue.severity,
         "msg": lambda issue: issue.text,
         "confidence": lambda issue: issue.confidence,
